@@ -1,0 +1,337 @@
+<html>
+<head>
+<title>NATO</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="shortcut icon" type="image/x-icon" href="http://www.matthewmorrone.com/img/psi-white.ico" />
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-color/2.1.2/jquery.color.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.min.js"></script>
+<script type="text/javascript" src="http://www.matthewmorrone.com/starch.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css" />
+<link rel="stylesheet" href="http://www.matthewmorrone.com/style.css" />
+<script>
+var log = console.log.bind(console)
+</script>
+<style>
+* {
+	margin: 0px;
+	padding: 0px;
+}
+body {
+	width: 100%;
+	height: 100%;
+	/*overflow: hidden;*/
+}
+body {
+	background: #ccc;
+}
+
+table, th, td {
+	border: 1px solid black;
+	border-collapse: collapse;
+}
+table {
+	display: none;
+}
+
+#flex {
+	display: flex;
+	flex-flow: row nowrap;
+	justify-content: space-around;
+	align-items: center;
+	width: 50%;
+	height: 100%;
+	margin: auto;
+}
+.flip {
+	-webkit-perspective: 800;
+	width: 400px;
+	height: 200px;
+	position: relative;
+	margin: 50px auto;
+}
+.flip .card.flipped {
+	-webkit-transform: rotatey(-180deg);
+}
+.flip .card {
+	width: 100%;
+	height: 100%;
+	-webkit-transform-style: preserve-3d;
+	-webkit-transition: 0.5s;
+}
+.card {
+	/*width: 100px;*/
+	/*height: 100px;*/
+	color: black;
+	/*border: 1px solid black;*/
+	text-align: center;
+}
+.flip .card .face {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	-webkit-backface-visibility: hidden ;
+	z-index: 2;
+	font-family: Georgia;
+	font-size: 3em;
+	text-align: center;
+	line-height: 200px;
+	border-radius: 50px;
+}
+.flip .card .front {
+	position: absolute;
+	z-index: 1;
+	background-color: black;
+	color: white;
+	cursor: pointer;
+}
+.flip .card .back {
+	-webkit-transform: rotatey(-180deg);
+	background-color: white;
+	color: black;
+	cursor: pointer;
+}
+.arrow {
+	width: 100px;
+	height: 100px;
+	background-color: black;
+	border-radius: 50px;
+}
+.blank {background-color: white !important;}
+.wrong {background-color: red !important;}
+.right {background-color: green !important;}
+pre {
+	display: none;
+}
+#dropzone {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 9;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	transition: visibility 175ms, opacity 175ms;
+	text-shadow: 1px 1px 2px #000;
+	background: rgba(0, 0, 0, 0.5);
+}
+
+/*@media (min-width: 700px) {
+	body {
+		-webkit-touch-callout: none;
+		-webkit-user-select: none;
+		-khtml-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+	}
+}
+@media (max-width: 700px) {
+	.arrow {
+		display: none;
+	}
+}*/
+
+</style>
+<script>
+// https://github.com/neocotic/mor.js
+// https://github.com/neocotic/phony.js
+"use strict";
+var log = console.log.bind(console);
+function score() {
+	document.title = "NATO (" + $(".right").length + " / " + $(".flip").length + ")"
+}
+
+$(function() {
+
+
+
+	function isFile(e) {
+		for (var i = 0; i < e.dataTransfer.types.length; i++) {
+			if (e.dataTransfer.types[i] === "Files") {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	var dropzone = document.querySelector("#dropzone"), lastTarget
+	window.addEventListener("dragenter", function (e) {
+		if (isFile(e)) {
+			lastTarget = e.target;
+			dropzone.style.visibility = ""
+			dropzone.style.opacity = 1
+		}
+	})
+	window.addEventListener("dragleave", function (e) {
+		e.preventDefault()
+		if (e.target === lastTarget) {
+			dropzone.style.visibility = "hidden"
+			dropzone.style.opacity = 0
+		}
+	})
+	window.addEventListener("dragover", function (e) {
+		e.preventDefault()
+	})
+	window.addEventListener("drop", function (e) {
+		e.preventDefault()
+		dropzone.style.visibility = "hidden"
+		dropzone.style.opacity = 0
+		if(e.dataTransfer.files.length == 1) {
+			document.title = e.dataTransfer.files[0].name.split('.')[0]
+			readFile(e.dataTransfer.files[0])
+		}
+	})
+
+	function readFile(file) {
+		var reader = new FileReader()
+		reader.onload = function() {
+			log(this.result)
+			cards(csv(this.result))
+		}
+		reader.readAsText(file)
+	}
+
+
+
+
+
+	// $("body").append(screen.width+" "+screen.height)
+	$.fn.shuffle = function() {
+		var allElems = this.get(),
+			getRandom = function(max) {
+				return Math.floor(Math.random() * max)
+			},
+			shuffled = $.map(allElems, function(){
+				var random = getRandom(allElems.length),
+					randEl = $(allElems[random]).clone(true)[0]
+				allElems.splice(random, 1)
+				return randEl
+			})
+		this.each(function(i){
+			$(this).replaceWith($(shuffled[i]))
+		})
+		return $(shuffled)
+	}
+
+	function csv(input) {
+		return input.trim().split("\n").map((d) => {return d.split(",")})
+	}
+	function cards(data) {
+		var $body = $("#cards")
+		$body.empty()
+		data.each(function(v, k) {
+			var $card = $("<div></div>", {i: k, class: "flip", html:
+				$("<div></div>", {class: "card", html: [
+					$("<div></div>", {class: "face front", text: v[0]}),
+					$("<div></div>", {class: "face back", text: v[1]})
+				]})
+			})
+			$body.append($card)
+		})
+		$(".flip").shuffle()
+		var i = 0, n = $(".flip").length
+		$(".flip").hide()
+		$(".flip").eq(i).show()
+		// score()
+
+		$("#right").click(function() {
+			$(".flip").hide()
+			if (i >= n - 1) {
+				i = 0
+				$(".flip").shuffle()
+				$(".right").each(function() {
+					$(this).parents(".flip").remove()
+				})
+				$(".wrong").removeClass("wrong").addClass("blank")
+				// score()
+			}
+			i++
+			if ($(".flip").eq(i).find(".back").hasClass("right")) {
+				$("#right").click()
+			}
+			$(".flip").eq(i).show()
+			// score()
+		})
+		$("#left").click(function() {
+			$(".flip").hide()
+			if (i <= 0) {
+				i = n
+			}
+			i--
+			$(".flip").eq(i).show()
+			// score()
+		})
+	}
+
+
+	cards(csv($("pre").text()))
+
+
+
+	$(document).on('click', '.flip', function(e){
+		if (e.which === 1) {
+			$(this).find('.card').addClass('flipped').mouseleave(function() {
+				// score()
+				$(this).removeClass('flipped')
+			})
+			// score()
+		}
+		// score()
+		return false
+	})
+	$(document).on("click contextmenu", ".back", function(e) {
+		if (e.which === 2) {$(this).removeClass("blank").removeClass("right").addClass("wrong")}
+		if (e.which === 1) {$(this).removeClass("wrong").removeClass("right").addClass("blank")}
+		if (e.which === 3) {$(this).removeClass("blank").removeClass("wrong").addClass("right")}
+		// score()
+	})
+
+
+
+
+
+})
+
+</script>
+</head>
+<body oncontextmenu="return false;">
+<pre>
+A,Alpha
+B,Bravo
+C,Charlie
+D,Delta
+E,Echo
+F,Foxtrot
+G,Golf
+H,Hotel
+I,India
+J,Juliet
+K,Kilo
+L,Lima
+M,Mike
+N,November
+O,Oscar
+P,Papa
+Q,Quebec
+R,Romeo
+S,Sierra
+T,Tango
+U,Uniform
+V,Victor
+W,Whiskey
+X,Xray
+Y,Yankee
+Z,Zulu
+</pre>
+<div style="visibility:hidden; opacity:0" id="dropzone"></div>
+
+<div id="flex">
+	<div id='left'><img class='arrow' src="left.png" /></div>
+	<div id="cards"></div>
+	<div id='right'><img class='arrow' src="right.png" /></div>
+</div>
+</body>
+</html>

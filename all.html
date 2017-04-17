@@ -1,0 +1,228 @@
+<html>
+<head>
+<title>NATO</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="shortcut icon" type="image/x-icon" href="http://www.matthewmorrone.com/psi.ico" />
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-color/2.1.2/jquery.color.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.min.js"></script>
+<script type="text/javascript" src="http://www.matthewmorrone.com/starch.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css" />
+<link rel="stylesheet" href="http://www.matthewmorrone.com/style.css" />
+<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/css/bootstrap.min.css" /> -->
+<script>
+var log = console.log.bind(console)
+</script>
+<style>
+* {
+	margin: 0px;
+	padding: 0px;
+}
+body {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+#flex {
+	width: 70%;
+	height: 100%;
+	display: flex;
+	flex-flow: row wrap;
+	justify-content: center;
+	align-content: center;
+	text-align: center;
+	margin: auto;
+
+}
+table, th, td {
+	border: 1px solid black;
+	border-collapse: collapse;
+}
+pre, table {
+	display: none;
+}
+.card {
+	width: 100px;
+	height: 100px;
+	color: black;
+	border: 1px solid black;
+	text-align: center;
+	transition: 0.5s;
+	transform-style: preserve-3d;
+	position: relative;
+}
+.card-container {
+	perspective: 1000;
+}
+.card-container:hover .card, .card-container.hover .card {
+	transform: rotateY(180deg);
+}
+.click {
+	transform: rotateY(180deg);
+}
+.front, .back {
+	backface-visibility: hidden;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+.front {
+	z-index: 2;
+	transform: rotateY(0deg);
+	font-size: 600%;
+	text-align: center;
+	color: blue;
+}
+.back {
+	transform: rotateY(180deg);
+	font-size: 100%;
+	color: blue;
+}
+.droppable {
+	height: 100%;
+	width: 100px;
+}
+#wrong {
+	color: red;
+	float: left;
+	background-color: rgba(255, 0, 0, .5);
+}
+#right {
+	color: green;
+	float: right;
+	background-color: rgba(0, 255, 0, .5);
+}
+.droppable .card-container {
+	float: right;
+}
+#wrong .card-container * {
+	background-color: rgba(255, 0, 0, .5);
+}
+#right .card-container * {
+	background-color: rgba(0, 255, 0, .5);
+}
+</style>
+<script>
+// https://github.com/neocotic/mor.js
+// https://github.com/neocotic/phony.js
+
+// http://jsfiddle.net/nicooprat/gddts/
+
+var log = console.log.bind(console);
+function shuffle(array) {
+	var m = array.length, t, i;
+
+	// While there remain elements to shuffle…
+	while (m) {
+
+		// Pick a remaining element…
+		i = Math.floor(Math.random() * m--);
+
+		// And swap it with the current element.
+		t = array[m];
+		array[m] = array[i];
+		array[i] = t;
+	}
+
+	return array;
+}
+
+$(function() {
+
+	$.fn.shuffle = function() {
+		var allElems = this.get(),
+			getRandom = function(max) {
+				return Math.floor(Math.random() * max);
+			},
+			shuffled = $.map(allElems, function(){
+				var random = getRandom(allElems.length),
+					randEl = $(allElems[random]).clone(true)[0];
+				allElems.splice(random, 1);
+				return randEl;
+		   });
+		this.each(function(i){
+			$(this).replaceWith($(shuffled[i]));
+		});
+		return $(shuffled);
+	};
+
+	// var body = $("body")
+	var body = $("#flex")
+	var data = $("pre").text().trim().split("\n").map((d) => {return d.split(",")})
+	var table = $("<table>", {html: $("<caption></caption>", {text: "NATO"})})
+	data.each(function(v, k) {
+		table.append($("<tr></tr>", {
+			html: [
+				$("<th></th>", {text: v[0]}),
+				$("<td></td>", {text: v[1]})
+			]
+		}))
+		// body.append($("<div></div>", {question: v[0], answer: v[1], class: "card", state: "front", text: v[0]}))
+		// body.append($("<div></div>", {question: v[0], answer: v[1], class: "card", state: "back", text: v[1]}))
+		var card = $("<div></div>", {class: "card-container", html: $("<div></div>", {class: "card", html: [
+			$("<div></div>", {class: "front", text: v[0]}),
+			$("<div></div>", {class: "back", text: v[1]})
+		]})})
+		body.append(card)
+	})
+	$(".card-container").shuffle()
+	// body.sortable()
+	$(".card-container").draggable({
+		revert: "invalid",
+		snap: ".droppable, .card",
+		snapTolerance: 25,
+		snapMode: "inner",
+		// revert: function(event, ui) {
+		// 	$(this).data("uiDraggable").originalPosition = {
+		// 		top: 0,
+		// 		left: 0
+		// 	}
+		// 	return !event;
+		// },
+		containment: [0, 0, window.width, window.height]
+	})
+	// $(".droppable").droppable({snap: true})
+
+})
+// $(document).on("click", ".card-container", function() {
+// 	// transform: rotateY(180deg);
+// 	$(this).toggleClass("click")
+// })
+</script>
+</head>
+<body>
+<pre>
+A,Alpha
+B,Bravo
+C,Charlie
+D,Delta
+E,Echo
+F,Foxtrot
+G,Golf
+H,Hotel
+I,India
+J,Juliet
+K,Kilo
+L,Lima
+M,Mike
+N,November
+O,Oscar
+P,Papa
+Q,Quebec
+R,Romeo
+S,Sierra
+T,Tango
+U,Uniform
+V,Victor
+W,Whiskey
+X,Xray
+Y,Yankee
+Z,Zulu
+</pre>
+<div class="droppable" id="wrong">Wrong</div>
+<div class="droppable" id="right">Right</div>
+<div id="flex"></div>
+
+</body>
+</html>
